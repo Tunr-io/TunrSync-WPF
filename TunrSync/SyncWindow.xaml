@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:TunrSync"
         mc:Ignorable="d"
         DataContext="{StaticResource DataModel}"
-        Title="TunrSync" Background="Black" Height="400" Width="640">
+        Title="TunrSync" Background="Black" MinWidth="540" MinHeight="350" Height="400" Width="640">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220" />
