@@ -1,0 +1,42 @@
+﻿<Window x:Class="TunrSync.SyncWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TunrSync"
+        mc:Ignorable="d"
+        DataContext="{StaticResource DataModel}"
+        Title="TunrSync" Background="Black" Height="400" Width="640">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Margin="8 0 " Grid.Column="0" Orientation="Vertical">
+            <!-- Logo -->
+            <TextBlock Text="TunrSync" Margin="0 0 0 16" Foreground="White" TextAlignment="Left" FontFamily="Segoe UI" FontWeight="Light" FontSize="48" />
+            <!-- Music directory option -->
+            <TextBlock Text="MUSIC DIRECTORY" Style="{DynamicResource TextBoxLabelStyle}" />
+            <TextBlock Text="{Binding Path=Configuration.SyncPath}" Foreground="White" Margin="-1,0,1,0" />
+            <Button x:Name="ButtonChange"  Style="{StaticResource ButtonStyle}" FontSize="12" Margin="0 8 0 32" Click="ButtonChange_Click">CHANGE</Button>
+            <!-- Transfer mode -->
+            <CheckBox IsChecked="{Binding Path=Configuration.UploadEnabled, Mode=TwoWay}" Content="upload new tracks" Style="{DynamicResource CheckBoxStyle}" />
+            <CheckBox IsChecked="{Binding Path=Configuration.DownloadEnabled, Mode=TwoWay}" Content="download new tracks" Style="{DynamicResource CheckBoxStyle}" />
+        </StackPanel>
+        
+        <Button Grid.Column="0" VerticalAlignment="Bottom" Style="{StaticResource ButtonStyle}">LOG OUT</Button>
+        
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+            
+            <TextBlock FontSize="36" FontWeight="Black" Foreground="#22ffffff" HorizontalAlignment="Center" VerticalAlignment="Center" Text="READY TO SYNC" />
+
+            <ProgressBar Grid.Row="1" Height="35" Style="{StaticResource ProgressBarStyle}" />
+            <Button Grid.Row="1" Style="{StaticResource ActiveButtonStyle}">SYNC</Button>
+        </Grid>
+    </Grid>
+</Window>
