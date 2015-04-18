@@ -25,6 +25,9 @@ namespace TunrSync
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Change sync directory button event
+        /// </summary>
         private void ButtonChange_Click(object sender, RoutedEventArgs e)
         {
             var fileDialog = new System.Windows.Forms.FolderBrowserDialog();
@@ -39,6 +42,11 @@ namespace TunrSync
                 default:
                     break;
             }
+        }
+
+        private void ButtonSync_Click(object sender, RoutedEventArgs e)
+        {
+            (DataContext as DataModel).SyncAgent.Sync(); // Do it!
         }
     }
 }

@@ -67,11 +67,19 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Converters\BooleanToCollapsedVisibilityConverter.cs" />
     <Compile Include="Converters\BooleanToHiddenVisibilityConverter.cs" />
     <Compile Include="Converters\InverseBooleanConverter.cs" />
+    <Compile Include="Converters\ValueConverterGroup.cs" />
     <Compile Include="Data\AuthResponseModel.cs" />
     <Compile Include="Data\ConfigModel.cs" />
     <Compile Include="Data\DataModel.cs" />
+    <Compile Include="Data\Models\Song.cs" />
+    <Compile Include="Data\Models\UploadTransferModel.cs" />
+    <Compile Include="Data\SampleData\SampleDataModel.cs" />
+    <Compile Include="GetStringAsyncWithProgress.cs" />
+    <Compile Include="Md5Hash.cs" />
+    <Compile Include="SyncAgent.cs" />
     <Compile Include="SyncWindow.xaml.cs">
       <DependentUpon>SyncWindow.xaml</DependentUpon>
     </Compile>

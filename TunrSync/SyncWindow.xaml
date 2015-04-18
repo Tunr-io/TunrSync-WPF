@@ -4,9 +4,29 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TunrSync"
+        xmlns:sample="clr-namespace:TunrSync.Data.SampleData"
+        xmlns:converters="clr-namespace:TunrSync.Converters"
         mc:Ignorable="d"
         DataContext="{StaticResource DataModel}"
         Title="TunrSync" Background="Black" MinWidth="540" MinHeight="350" Height="400" Width="640">
+
+    <d:Window.DataContext>
+        <sample:SampleDataModel />
+    </d:Window.DataContext>
+    <Window.Resources>
+        <ResourceDictionary>
+            <converters:BooleanToHiddenVisibilityConverter x:Key="BooleanToHiddenVisibilityConverter" />
+            <converters:ValueConverterGroup x:Key="InverseBooleanToHiddenVisibilityConverter">
+                <converters:InverseBooleanConverter />
+                <converters:BooleanToHiddenVisibilityConverter />
+            </converters:ValueConverterGroup>
+            <converters:BooleanToCollapsedVisibilityConverter x:Key="BooleanToCollapsedVisibilityConverter" />
+            <converters:ValueConverterGroup x:Key="InverseBooleanToCollapsedVisibilityConverter">
+                <converters:InverseBooleanConverter />
+                <converters:BooleanToCollapsedVisibilityConverter />
+            </converters:ValueConverterGroup>
+        </ResourceDictionary>
+    </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220" />
@@ -18,7 +38,7 @@
             <TextBlock Text="TunrSync" Margin="0 0 0 16" Foreground="White" TextAlignment="Left" FontFamily="Segoe UI" FontWeight="Light" FontSize="48" />
             <!-- Music directory option -->
             <TextBlock Text="MUSIC DIRECTORY" Style="{DynamicResource TextBoxLabelStyle}" />
-            <TextBlock Text="{Binding Path=Configuration.SyncPath}" Foreground="White" Margin="-1,0,1,0" />
+            <TextBlock Text="{Binding Path=Configuration.SyncPath}" Foreground="White" TextWrapping="Wrap" />
             <Button x:Name="ButtonChange"  Style="{StaticResource ButtonStyle}" FontSize="12" Margin="0 8 0 32" Click="ButtonChange_Click">CHANGE</Button>
             <!-- Transfer mode -->
             <CheckBox IsChecked="{Binding Path=Configuration.UploadEnabled, Mode=TwoWay}" Content="upload new tracks" Style="{DynamicResource CheckBoxStyle}" />
@@ -32,11 +52,40 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="auto" />
             </Grid.RowDefinitions>
-            
-            <TextBlock FontSize="36" FontWeight="Black" Foreground="#22ffffff" HorizontalAlignment="Center" VerticalAlignment="Center" Text="READY TO SYNC" />
 
-            <ProgressBar Grid.Row="1" Height="35" Style="{StaticResource ProgressBarStyle}" />
-            <Button Grid.Row="1" Style="{StaticResource ActiveButtonStyle}">SYNC</Button>
+            <TextBlock Visibility="{Binding Path=SyncAgent.IsSyncing, Converter={StaticResource InverseBooleanToHiddenVisibilityConverter}}" FontSize="36" FontWeight="Black" Foreground="#22ffffff" HorizontalAlignment="Center" VerticalAlignment="Center" Text="READY TO SYNC" />
+            <ListView ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" BorderThickness="0" ItemsSource="{Binding Path=SyncAgent.CurrentUploads}" Visibility="{Binding Path=SyncAgent.IsSyncing, Converter={StaticResource BooleanToHiddenVisibilityConverter}}" Background="Transparent" Grid.Row="0">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Margin" Value="0 4" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid HorizontalAlignment="Stretch">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Rectangle Grid.Column="0" Width="5" Height="auto" Fill="#ffff4ceb" Margin="0 0 16 0" />
+                            <StackPanel HorizontalAlignment="Stretch" Grid.Column="1" Orientation="Vertical" Margin="0 4 0 4">
+                                <TextBlock TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="20" Text="{Binding File.Name}" Foreground="White" />
+                                <TextBlock Text="Upload" Foreground="#7FFFFFFF" />
+                                <ProgressBar Value="{Binding Path=Progress}" Style="{StaticResource ProgressBarStyle}" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <StackPanel Grid.Row="1" Visibility="{Binding Path=SyncAgent.IsSyncing, Converter={StaticResource BooleanToCollapsedVisibilityConverter}}">
+                <Grid Height="20">
+                    <ProgressBar Value="20" Grid.Row="1"  Style="{StaticResource ProgressBarStyle}" />
+                    <TextBlock Text="{Binding Path=SyncAgent.StatusMessage}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="White" TextAlignment="Center" />
+                </Grid>
+                <Button Grid.Row="1" Style="{StaticResource ButtonStyle}">CANCEL SYNC</Button>
+            </StackPanel>
+            <Button x:Name="ButtonSync" Visibility="{Binding Path=SyncAgent.IsSyncing, Converter={StaticResource InverseBooleanToCollapsedVisibilityConverter}}" Grid.Row="1" Style="{StaticResource ActiveButtonStyle}" Click="ButtonSync_Click">SYNC</Button>
         </Grid>
     </Grid>
 </Window>
