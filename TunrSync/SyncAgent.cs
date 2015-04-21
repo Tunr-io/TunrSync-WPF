@@ -37,7 +37,7 @@ namespace TunrSync
         /// <summary>
         /// Number of threads used for indexing
         /// </summary>
-        private const int IndexThreadCount = 10;
+        private const int IndexThreadCount = 12;
 
         /// <summary>
         /// Stores the configuration used to sync
@@ -84,10 +84,135 @@ namespace TunrSync
         }
         private string statusMessage;
 
+        #region Progress properties
+        public int Progress
+        {
+            get
+            {
+                int numerator = FilesIndexed + FilesUploaded + FilesDownloaded;
+                int denominator = FilesToIndex + FilesToUpload + FilesToDownload;
+                if (denominator <= 0)
+                {
+                    return 0;
+                }
+                return (int)((numerator / (double)denominator)*100);
+            }
+        }
+
+        private int FilesIndexed
+        {
+            get
+            {
+                return filesIndexed;
+            }
+            set
+            {
+                if (filesIndexed != value)
+                {
+                    filesIndexed = value;
+                    OnPropertyChanged("FilesIndexed");
+                    OnPropertyChanged("Progress");
+                }
+            }
+        }
+        private int filesIndexed;
+
+        private int FilesToIndex
+        {
+            get
+            {
+                return filesToIndex;
+            }
+            set
+            {
+                if (filesToIndex != value)
+                {
+                    filesToIndex = value;
+                    OnPropertyChanged("FilesToIndex");
+                    OnPropertyChanged("Progress");
+                }
+            }
+        }
+        private int filesToIndex;
+
+        private int FilesUploaded
+        {
+            get
+            {
+                return filesUploaded;
+            }
+            set
+            {
+                if (filesUploaded != value)
+                {
+                    filesUploaded = value;
+                    OnPropertyChanged("FilesUploaded");
+                    OnPropertyChanged("Progress");
+                }
+            }
+        }
+        private int filesUploaded;
+
+        private int FilesToUpload
+        {
+            get
+            {
+                return filesToUpload;
+            }
+            set
+            {
+                if (filesToUpload != value)
+                {
+                    filesToUpload = value;
+                    OnPropertyChanged("FilesToUpload");
+                    OnPropertyChanged("Progress");
+                }
+            }
+        }
+        private int filesToUpload;
+
+        private int FilesDownloaded
+        {
+            get
+            {
+                return filesDownloaded;
+            }
+            set
+            {
+                if (filesDownloaded != value)
+                {
+                    filesDownloaded = value;
+                    OnPropertyChanged("FilesDownloaded");
+                    OnPropertyChanged("Progress");
+                }
+            }
+        }
+        private int filesDownloaded;
+
+        private int FilesToDownload
+        {
+            get
+            {
+                return filesToDownload;
+            }
+            set
+            {
+                if (filesToDownload != value)
+                {
+                    filesToDownload = value;
+                    OnPropertyChanged("FilesToDownload");
+                    OnPropertyChanged("Progress");
+                }
+            }
+        }
+        private int filesToDownload;
+
+        #endregion
+
         /// <summary>
         /// List of currently running uploads
         /// </summary>
-        public ObservableCollection<UploadTransferModel> CurrentUploads { get; set; }
+        public ObservableCollection<TransferModel> CurrentTransfers { get; set; }
 
         /// <summary>
         /// Event handler for property changes
@@ -97,7 +222,7 @@ namespace TunrSync
         public SyncAgent(ConfigModel config)
         {
             Configuration = config;
-            CurrentUploads = new ObservableCollection<UploadTransferModel>();
+            CurrentTransfers = new ObservableCollection<TransferModel>();
         }
 
         /// <summary>
@@ -109,7 +234,7 @@ namespace TunrSync
             StatusMessage = "Preparing to sync...";
 
             // Clear current upload list
-            CurrentUploads.Clear();
+            CurrentTransfers.Clear();
 
             // Fetch local and remote libraries
             StatusMessage = "Scanning local music directory ...";
@@ -145,7 +270,8 @@ namespace TunrSync
                 directory.EnumerateFiles(searchPattern,
                     SearchOption.AllDirectories)).ToList();
             var localIndex = new ConcurrentDictionary<string, FileInfo>();
-            int processedCount = 0;
+            FilesToIndex = files.Count;
+            FilesIndexed = 0;
 
             List<FileInfo>[] indexList = new List<FileInfo>[IndexThreadCount];
             for (int i = 0; i < IndexThreadCount; i++)
@@ -157,19 +283,19 @@ namespace TunrSync
                 indexList[i % IndexThreadCount].Add(files[i]);
             }
 
-            await Task.WhenAll(indexList.Select(l => Task.Run(() => {
+            await Task.WhenAll(indexList.Select(l => Task.Factory.StartNew(() => {
                 foreach (var file in l)
                 {
-                    var hash = Md5Hash.Md5HashFile(file.FullName);
+                    var hash = AudioHash.HashAudio(file.FullName);
                     if (!localIndex.ContainsKey(hash))
                     {
                         localIndex.TryAdd(hash, file);
                     }
-                    processedCount++;
+                    FilesIndexed++;
                 }
             })));
 
-            StatusMessage = "Found " + processedCount + " candidate files";
+            StatusMessage = "Found " + FilesIndexed + " candidate files";
             return new Dictionary<string, FileInfo>(localIndex);
         }
 
@@ -194,7 +320,7 @@ namespace TunrSync
                 }
                 var responseString = await library_request.Content.ReadAsStringAsync();
                 var songs = JsonConvert.DeserializeObject<List<Song>>(responseString);
-                return songs.ToDictionary(k => k.Md5Hash);
+                return songs.GroupBy(s => s.AudioMd5Hash).ToDictionary(k => k.Key, k => k.First());
             }
         }
 
@@ -203,6 +329,10 @@ namespace TunrSync
         /// </summary>
         private async Task UploadFiles(List<FileInfo> files)
         {
+            // Update progress count
+            FilesToUpload = files.Count;
+            FilesUploaded = 0;
+
             // Initialize a list for each thread
             List<FileInfo>[] threadLists = new List<FileInfo>[ThreadCount];
             for (int i = 0; i < ThreadCount; i++)
@@ -228,25 +358,28 @@ namespace TunrSync
                         var newUpload = new UploadTransferModel(this, file);
                         Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
                         {
-                            CurrentUploads.Add(newUpload);
+                            CurrentTransfers.Add(newUpload);
                         }));
-                        var result = await newUpload.Upload();
+                        var result = await newUpload.Start();
                         if (!result)
                         {
                             failCount++;
+                            FilesUploaded++;
                             continue;
                         }
                         Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
                         {
-                            CurrentUploads.Remove(newUpload);
+                            CurrentTransfers.Remove(newUpload);
                         }));
                     }
                     catch (Exception)
                     {
                         failCount++;
+                        FilesUploaded++;
                         continue;
                     }
                     successCount++;
+                    FilesUploaded++;
                 }
             })));
         }

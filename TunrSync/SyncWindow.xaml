@@ -54,7 +54,7 @@
             </Grid.RowDefinitions>
 
             <TextBlock Visibility="{Binding Path=SyncAgent.IsSyncing, Converter={StaticResource InverseBooleanToHiddenVisibilityConverter}}" FontSize="36" FontWeight="Black" Foreground="#22ffffff" HorizontalAlignment="Center" VerticalAlignment="Center" Text="READY TO SYNC" />
-            <ListView ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" BorderThickness="0" ItemsSource="{Binding Path=SyncAgent.CurrentUploads}" Visibility="{Binding Path=SyncAgent.IsSyncing, Converter={StaticResource BooleanToHiddenVisibilityConverter}}" Background="Transparent" Grid.Row="0">
+            <ListView ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" BorderThickness="0" ItemsSource="{Binding Path=SyncAgent.CurrentTransfers}" Visibility="{Binding Path=SyncAgent.IsSyncing, Converter={StaticResource BooleanToHiddenVisibilityConverter}}" Background="Transparent" Grid.Row="0">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="Margin" Value="0 4" />
@@ -69,7 +69,7 @@
                             </Grid.ColumnDefinitions>
                             <Rectangle Grid.Column="0" Width="5" Height="auto" Fill="#ffff4ceb" Margin="0 0 16 0" />
                             <StackPanel HorizontalAlignment="Stretch" Grid.Column="1" Orientation="Vertical" Margin="0 4 0 4">
-                                <TextBlock TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="20" Text="{Binding File.Name}" Foreground="White" />
+                                <TextBlock TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="20" Text="{Binding Name}" Foreground="White" />
                                 <TextBlock Text="Upload" Foreground="#7FFFFFFF" />
                                 <ProgressBar Value="{Binding Path=Progress}" Style="{StaticResource ProgressBarStyle}" />
                             </StackPanel>
@@ -80,7 +80,7 @@
 
             <StackPanel Grid.Row="1" Visibility="{Binding Path=SyncAgent.IsSyncing, Converter={StaticResource BooleanToCollapsedVisibilityConverter}}">
                 <Grid Height="20">
-                    <ProgressBar Value="20" Grid.Row="1"  Style="{StaticResource ProgressBarStyle}" />
+                    <ProgressBar Value="{Binding SyncAgent.Progress, Mode=OneWay}" Grid.Row="1"  Style="{StaticResource ProgressBarStyle}" />
                     <TextBlock Text="{Binding Path=SyncAgent.StatusMessage}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="White" TextAlignment="Center" />
                 </Grid>
                 <Button Grid.Row="1" Style="{StaticResource ButtonStyle}">CANCEL SYNC</Button>

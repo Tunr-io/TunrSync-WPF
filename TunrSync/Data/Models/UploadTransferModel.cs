@@ -12,41 +12,24 @@ using System.Windows;
 
 namespace TunrSync.Data.Models
 {
-    public class UploadTransferModel : INotifyPropertyChanged
+    public class UploadTransferModel : TransferModel
     {
-        public SyncAgent SyncAgent { get; set; }
         public FileInfo File { get; set; }
-        public bool HasFailed { get; set; }
-        public string FailureReason { get; set; }
-        public int Progress
-        {
+        public new string Name {
             get
             {
-                return progress;
-            }
-            set
-            {
-                if (progress != value)
-                {
-                    progress = value;
-                    OnPropertyChanged("Progress");
-                }
+                return File.Name;
             }
         }
-        private int progress;
-        public UploadTransferModel(SyncAgent syncAgent, FileInfo file)
+        public UploadTransferModel(SyncAgent syncAgent, FileInfo file) : base(syncAgent)
         {
-            SyncAgent = syncAgent;
             File = file;
-            HasFailed = false;
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
         /// Triggers upload of the file
         /// </summary>
-        public async Task<bool> Upload()
+        public override async Task<bool> Start()
         {
             ProgressMessageHandler progress = new ProgressMessageHandler();
             progress.HttpSendProgress += new EventHandler<HttpProgressEventArgs>(HttpSendProgress);
@@ -90,17 +73,6 @@ namespace TunrSync.Data.Models
             {
                 Progress = e.ProgressPercentage;
             }));
-        }
-
-        /// <summary>
-        /// Method to fire the PropertyChanged event when a property has changed in this class
-        /// </summary>
-        /// <param name="propertyName">Name of the property that has changed</param>
-        protected void OnPropertyChanged(string propertyName)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

@@ -23,8 +23,14 @@ namespace TunrSync.Data.Models
         /// <summary>
         /// MD5 hash of the first few KB of the file. Used to prevent duplicates.
         /// </summary>
-        [JsonProperty("md5Hash")]
-        public string Md5Hash { get; set; }
+        [JsonProperty("fileMd5Hash")]
+        public string FileMd5Hash { get; set; }
+
+        /// <summary>
+        /// MD5 hash of the file audio contents. Used to prevent duplicates.
+        /// </summary>
+        [JsonProperty("AudioMd5Hash")]
+        public string AudioMd5Hash { get; set; }
 
         /// <summary>
         /// Full name of the file originally uploaded.
@@ -54,7 +60,7 @@ namespace TunrSync.Data.Models
         /// Bitrate of the audio.
         /// </summary>
         [JsonProperty("audioBitrate")]
-        public int AudioBitrate { get; set; }
+        public double AudioBitrate { get; set; }
 
         /// <summary>
         /// Sample rate of the audio.
